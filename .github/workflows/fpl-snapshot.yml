@@ -23,6 +23,9 @@ jobs:
       - name: Capture FPL API
         run: python fpl_snapshot.py
 
+      - name: Build readable summary
+        run: python summarise.py
+
       - name: Commit snapshot
         run: |
           git config user.name "fpl-snapshot"
