@@ -1,0 +1,36 @@
+name: FPL snapshot
+
+on:
+  schedule:
+    # Times are UTC. In BST these land an hour later (09:00).
+    - cron: "0 8 * * 2"   # Tuesday, post-gameweek
+    - cron: "0 8 * * 5"   # Friday, pre-deadline
+  workflow_dispatch:       # lets you trigger a run by hand
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Capture FPL API
+        run: python fpl_snapshot.py
+
+      - name: Commit snapshot
+        run: |
+          git config user.name "fpl-snapshot"
+          git config user.email "fpl-snapshot@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "nothing new to commit"
+          else
+            git commit -m "snapshot $(date -u +%Y-%m-%d)"
+            git push
+          fi
